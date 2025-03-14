@@ -4,23 +4,31 @@
  */
 package lab8p1_ramonnolasco;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 /**
  *
  * @author ramon
  */
-
 public class Lab8P1_RamonNolasco {
      /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
-
         Scanner input = new Scanner(System.in);
         ArrayList<Personaje> personajes = new ArrayList<>();
         ArrayList<Mapa> mapas = new ArrayList<>();
         int opcion;
+        
+        /*
+        personajes.add(new Personaje("JESUS", "STRATEGIST", 200, 200, 30));
+        personajes.add(new Personaje("LIZARD", "DPS", 150, 150, 55));
+        personajes.add(new Personaje("SONIC", "STRATEGIST", 200, 200, 40));
+        personajes.add(new Personaje("SPIDERMAN", "DPS", 100, 100, 60));
+        personajes.add(new Personaje("VENOM", "DPS", 125, 125, 55));
+        personajes.add(new Personaje("MARIO", "VANGUARD", 250, 250, 10));
+        */
 
         do {
             System.out.println("---------------- MENU -----------------");
@@ -145,28 +153,23 @@ public class Lab8P1_RamonNolasco {
                     imprimirLista(mapas);
                     break;
                     
-                case 5:
-                    
+                case 5:                   
                     eliminarElemento(personajes, "personaje");
                     break;
                             
-                case 6:
-                    
+                case 6:                  
                     eliminarElemento(mapas, "mapa");
                     break;
                     
-                case 7:
-                    
-                    
+                case 7:                   
+                    iniciarSimulacion(personajes, mapas);
                     break;
                     
-                case 8:
-                    
+                case 8:                  
                     System.out.println("Saliendo del programa...");
                     break;
                     
-                default:
-                    
+                default:                   
                     System.out.println("Opcion invalida.");
             }
         } while (opcion != 8);
@@ -201,4 +204,136 @@ public class Lab8P1_RamonNolasco {
             System.out.println("Indice invalido.");
         }
     }
+    
+    public static void iniciarSimulacion(ArrayList<Personaje> personajes, ArrayList<Mapa> mapas) {
+        Random rand = new Random();
+
+        if (personajes.size() < 6){
+            System.out.println("No hay suficientes personajes para la simulacion (minimo 6).");
+            return;
+        }
+
+        if (mapas.isEmpty()){
+            System.out.println("No hay mapas disponibles para la simulacion.");
+            return;
+        }
+    
+        ArrayList<Personaje> equipo1 = new ArrayList<>();
+        ArrayList<Personaje> equipo2 = new ArrayList<>();
+        boolean[] usados = new boolean[personajes.size()];
+
+        while (equipo1.size() < 3) {
+            int index = rand.nextInt(personajes.size());
+            if (!usados[index]) {
+                equipo1.add(personajes.get(index));
+                usados[index] = true;
+            }
+        }
+
+        while (equipo2.size() < 3) {
+            int index = rand.nextInt(personajes.size());
+            if (!usados[index]) {
+                equipo2.add(personajes.get(index));
+                usados[index] = true;
+            }
+        }
+
+        Mapa mapaElegido = mapas.get(rand.nextInt(mapas.size()));
+        System.out.println("Mapa seleccionado: " + mapaElegido);
+
+        for (int ronda = 1; ronda <= mapaElegido.getNumRounds(); ronda++) {
+            System.out.println("----------- RONDA " + ronda + " ------------");
+            ejecutarRonda(equipo1, equipo2);
+            if (equipoMuerto(equipo1) || equipoMuerto(equipo2)) {
+                System.out.println("Un equipo ha sido eliminado. Fin de la simulacion.");
+                break;
+            }
+        }
+
+        int vidaTotalEquipo1 = calcularVidaTotal(equipo1);
+        int vidaTotalEquipo2 = calcularVidaTotal(equipo2);
+        System.out.println("------------ Resultado Final -------------");
+        System.out.println("Vida total Equipo 1: " + vidaTotalEquipo1);
+        System.out.println("Vida total Equipo 2: " + vidaTotalEquipo2);
+
+        if (vidaTotalEquipo1 > vidaTotalEquipo2){
+            System.out.println("Equipo 1 gana");
+        }else if (vidaTotalEquipo2 > vidaTotalEquipo1){
+            System.out.println("Equipo 2 gana");
+        }else {
+            System.out.println("Empate");
+        }
+    }
+    
+    public static void ejecutarRonda(ArrayList<Personaje> equipo1, ArrayList<Personaje> equipo2) {
+        Random rand = new Random();
+        int curacionesRealizadas = 0;
+
+        for (Personaje atacante : equipo1) {
+            if (atacante.getVida() > 0) {
+                if (atacante.getRol().equals("STRATEGIST") && rand.nextBoolean()) {
+                    Personaje aliado = equipo1.get(rand.nextInt(equipo1.size()));
+                    if (aliado.getVida() > 0) {
+                        aliado.curar(atacante.getDaño());
+                        System.out.println(atacante + " curo a " + aliado);
+                        curacionesRealizadas++;
+                    }
+                }else {
+                    Personaje enemigo = equipo2.get(rand.nextInt(equipo2.size()));
+                    if (enemigo.getVida() > 0) {
+                        int danio = atacante.getDaño();
+                        if (atacante.getRol().equals("DPS")) {
+                            danio += 10; 
+                        }
+                        enemigo.recibirDanio(danio);
+                        System.out.println(atacante + " ataco a " + enemigo + " e hizo " + danio + " de danio.");
+                    }
+                }
+            }
+        }
+
+        for (Personaje atacante : equipo2){
+            if (atacante.getVida() > 0){
+                if (atacante.getRol().equals("STRATEGIST") && rand.nextBoolean()){
+                    Personaje aliado = equipo2.get(rand.nextInt(equipo2.size()));
+                    if (aliado.getVida() > 0){
+                        aliado.curar(atacante.getDaño());
+                        System.out.println(atacante + " curo a " + aliado);
+                        curacionesRealizadas++;
+                    }
+                }else {
+                    Personaje enemigo = equipo1.get(rand.nextInt(equipo1.size()));
+                    if (enemigo.getVida() > 0){
+                        int danio = atacante.getDaño();
+                        if (atacante.getRol().equals("DPS")){
+                            danio += 10; 
+                        }
+                        enemigo.recibirDanio(danio);
+                        System.out.println(atacante + " ataco a " + enemigo + " e hizo " + danio + " de danio.");
+                    }
+                }
+            }
+        }
+        System.out.println("Curaciones realizadas en esta ronda: " + curacionesRealizadas);
+    }
+      
+    public static boolean equipoMuerto(ArrayList<Personaje> equipo) {
+        for ( Personaje p : equipo ){
+            if (p.getVida() > 0){
+                return false;
+            }
+        }
+        return true;
+    }   
+
+    public static int calcularVidaTotal(ArrayList<Personaje> equipo) {
+        int total = 0;
+        for ( Personaje p : equipo){
+            total += p.getVida();
+        }
+        return total;
+    }
+
+
+    
 }
