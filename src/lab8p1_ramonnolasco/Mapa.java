@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package lab8p1_ramonnolasco;
-import java.util.Random;
 
 /**
  *
@@ -13,9 +12,9 @@ public class Mapa {
     private String nombre;
     private int rounds;
 
-    public Mapa(String nombre) {
+    public Mapa(String nombre, int rounds) {
         this.nombre = nombre;
-        this.rounds = new Random().nextInt(10) + 1; 
+        this.rounds = rounds;
     }
 
     public String toString() {

@@ -16,7 +16,7 @@ public class Personaje {
     private int vidaMax;
     private int daño;
 
-    public Personaje(String nombre, String rol){
+    public Personaje(String nombre, String rol, int vida, int vidaMax, int daño){
         this.nombre = nombre;
         this.rol = rol.toUpperCase();
         this.vida = vida;
@@ -41,16 +41,7 @@ public class Personaje {
     public int getDaño(){
         return daño;
     }
-    
-    public void setVida(int vida, String rol){
-        this.vida = vida;
-        switch (rol){
-            case "DPS":
-                
-                break;
-        }
-    }
-    
+     
     public void recibirDanio(int danioRecibido){
         vida -= danioRecibido/2;
         if (vida < 0) vida = 0;
